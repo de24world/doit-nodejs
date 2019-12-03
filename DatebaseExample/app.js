@@ -48,9 +48,60 @@ app.use(
 
 var router = express.Router();
 
+router.route('/process/login').post(funciton(req, res) {
+  console.log('/process/login routing function call0');
+
+  var paramId - req.body.id || req.query.id; 
+  var paramPassword = req.body.password || req.query.password;
+  console.log('request Parameter :' + paramId + ', ' + paramPassword);
+  
+  if(database) {
+    authUser(database, paramId, paramPassword, function (err, docs) {
+      if (err) {
+        console.log('error return');
+        res.writeHead(200, { "Content-Type": "text/html;charset=utf8" });
+        res.write('<h1>error return</h1>');
+        res.end();
+        return;
+      }
+
+      if (docs) {
+        console.dir(docs);
+
+        res.writeHead(200, { "Content-Type": "text/html;charset=utf8" });
+        res.write('<h1>success login/h1>');
+        res.write('<div><p>user : ' + docs[0].name +  </p></div>');
+        res.end();
+        return;
+
+      }
+    });
+  }
+});
+
 app.use('/', router);
 
 
+var authUser = function (db, id, password, callback) {
+  console.log('authUser Call. : ' + id + ',' + password);
+
+  var users = db.collection('users');
+
+  users.find({ "id": id, "password": password }).toArray(function (err, docs) {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+
+    if (docs.length > 0) {
+      console.log('find a user.')
+      callback(null, docs);
+    } else {
+      console.log('can not find user.');
+      callback(null, null);
+    }
+  });
+};
 
 
 // 404 Error Page Handle
